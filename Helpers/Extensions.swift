@@ -28,3 +28,47 @@ extension UIColor {
         return UIColor(red: red/255, green: green/255, blue: blue/255, alpha: 1)
     }
 }
+
+let imageCache = NSCache<NSString, UIImage>()
+
+
+class CustomImageView: UIImageView {
+    
+    var imageUrlString: String?
+    
+    func loadImageFromUrl(urlString: String) {
+        
+        imageUrlString = urlString
+        
+        let url = URL(string: urlString)!
+               
+        URLSession.shared.dataTask(with: url, completionHandler: { data, response, error in
+       
+            if error != nil {
+               print(error as Any)
+               return
+            }
+            
+            if let image = imageCache.object(forKey: urlString as NSString) {
+                DispatchQueue.main.async{
+                    self.image = image
+                    return
+                }
+            }
+           
+            DispatchQueue.main.async {
+                let imageToCache = UIImage(data: data!)
+                imageCache.setObject(imageToCache!, forKey: urlString as NSString)
+                
+                if self.imageUrlString == urlString {
+                    self.image = imageToCache
+                }
+            }
+            
+       }).resume()
+    }
+}
+
+extension UIImageView {
+    
+}

@@ -12,5 +12,13 @@ class Video: NSObject {
     
     var thumbnailImage: String?
     var title: String?
+    var numberOfViews: Int?
     
+    var channel: Channel?
+    
+}
+
+class Channel: NSObject {
+    var name: String?
+    var profileImageName: String?
 }

@@ -10,29 +10,104 @@ import UIKit
 
 class HomeController: UICollectionViewController, UICollectionViewDelegateFlowLayout {
     
-    var videos: [Video] = {
-        var videoOne = Video()
-        videoOne.title = "Ice Cream - (Ft. Selena Gomez)"
-        videoOne.thumbnailImage = "icecream"
-           
-        var videoTwo = Video()
-        videoTwo.title = "DDU-DU DDU-DU"
-        videoTwo.thumbnailImage = "dudu"
+    var videos: [Video]?
+    
+//    var videos: [Video] = {
+//
+//        var joeRoganChannel = Channel()
+//        joeRoganChannel.name = "Joe Rogan Experience"
+//        joeRoganChannel.profileImageName = "joeRoganProfile"
+//
+//        var blackPinkChannel = Channel()
+//        blackPinkChannel.name = "BlackPink Vevo"
+//        blackPinkChannel.profileImageName = "profile"
+//
+//        var videoOne = Video()
+//        videoOne.title = "Ice Cream - (Ft. Selena Gomez)"
+//        videoOne.thumbnailImage = "icecream"
+//        videoOne.channel = blackPinkChannel
+//        videoOne.numberOfViews = 42342234
+//
+//        var videoTwo = Video()
+//        videoTwo.title = "DDU-DU DDU-DU"
+//        videoTwo.thumbnailImage = "dudu"
+//        videoTwo.channel = blackPinkChannel
+//        videoTwo.numberOfViews = 43423343
+////
+////        var videoThree = Video()
+////        videoThree.title = "Kill This Love"
+////        videoThree.thumbnailImage = "killthis"
+////        videoThree.channel = blackPinkChannel
+////
+////        var videoFour = Video()
+////        videoFour.title = "AS IF IT'S YOUR LAST"
+////        videoFour.thumbnailImage = "asifitsyourlast"
+////        videoFour.channel = blackPinkChannel
+////
+//        var videoFive = Video()
+//        videoFive.title = "Smoking with musk is the best thing ever"
+//        videoFive.thumbnailImage = "joeroganone"
+//        videoFive.channel = joeRoganChannel
+//        videoFive.numberOfViews = 234234323
+////
+////        var videoSix = Video()
+////        videoSix.title = "Trying DMT for the First Time"
+////        videoSix.thumbnailImage = "joerogantwo"
+////        videoSix.channel = joeRoganChannel
+//
+//        return [videoOne, videoTwo, videoFive]
+////            , videoThree, videoFour, videoFive, videoSix]
+//    }()
+    
+    func fetchVideos() {
+        let url = URL(string: "https://s3-us-west-2.amazonaws.com/youtubeassets/home.json")!
         
-        var videoThree = Video()
-        videoThree.title = "Kill This Love"
-        videoThree.thumbnailImage = "killthis"
+        URLSession.shared.dataTask(with: url, completionHandler: { data, response, error in
         
-        var videoFour = Video()
-        videoFour.title = "AS IF IT'S YOUR LAST"
-        videoFour.thumbnailImage = "asifitsyourlast"
+            if error != nil {
+                print(error as Any)
+                return
+            }
+            
+            do {
+                
+                self.videos = [Video]()
+                
+                let json = try JSONSerialization.jsonObject(with: data!, options: .mutableContainers)
+                
+                for dictionary in json as! [[String: AnyObject]] {
+                    let video = Video()
+                    video.title = dictionary["title"] as? String
+                    video.thumbnailImage = dictionary["thumbnail_image_name"] as? String
+                    
+                    let channel = Channel()
+                    let channelDict = dictionary["channel"] as? [String: AnyObject]
+                    
+                    channel.name = channelDict?["name"] as? String
+                    channel.profileImageName = channelDict?["profile_image_name"] as? String
+                    
+                    video.channel = channel
+ 
+                    self.videos?.append(video)
+                }
+            }
+            
+            catch let jsonError {
+                print(jsonError)
+            }
+            
+            DispatchQueue.main.async {
+                self.collectionView.reloadData()
+            }
+            
+        }).resume()
         
-        return [videoOne, videoTwo, videoThree, videoFour]
-    }()
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        fetchVideos()
         
         navigationController?.navigationBar.isTranslucent = false
         
@@ -87,13 +162,13 @@ class HomeController: UICollectionViewController, UICollectionViewDelegateFlowLa
     }
 
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return videos.count
+        return videos?.count ?? 0
     }
     
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cellId", for: indexPath) as! VideoCell
         
-        cell.video = videos[indexPath.item]
+        cell.video = videos?[indexPath.item]
                 
         return cell
     }

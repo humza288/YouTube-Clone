@@ -28,30 +28,54 @@ class VideoCell: BaseCell {
     var video: Video? {
         didSet {
             titleLabel.text = video?.title
-            
-            thumbnailImageView.image = UIImage(named: (video?.thumbnailImage) as! String)
+            setupProfileImage()
+            setupThumbnail()
+            setupDetails()
         }
     }
     
-    let thumbnailImageView: UIImageView = {
-        let imageView = UIImageView()
-        imageView.image = UIImage(named: "icecream")
+    func setupThumbnail() {
+        if let thumbnailImage = video?.thumbnailImage {
+            thumbnailImageView.loadImageFromUrl(urlString: thumbnailImage)
+        }
+    }
+    
+    func setupProfileImage() {
+        if let image = video?.channel?.profileImageName {
+            profilePictureView.loadImageFromUrl(urlString: image)
+        }
+    }
+    
+    func setupDetails() {
+        
+        let details = video?.channel?.name
+        
+        if (details != nil) && video?.numberOfViews != nil {
+                        
+            let formatter = NumberFormatter()
+            formatter.numberStyle = .decimal
+            
+            subtitleTextView.text = "\(String(describing: video!.channel!.name!)) • \(String(describing: formatter.string(for: video!.numberOfViews!))) • 2 Years Ago"
+        }
+    }
+    
+    let thumbnailImageView: CustomImageView = {
+        let imageView = CustomImageView()
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
         return imageView
     }()
     
-    let profilePictureView: UIImageView = {
-        let imageView = UIImageView()
-        imageView.image = UIImage(named: "profile")
+    let profilePictureView: CustomImageView = {
+        let imageView = CustomImageView()
         imageView.layer.cornerRadius = 22
         imageView.layer.masksToBounds = true
+        imageView.contentMode = .scaleAspectFill
         return imageView
     }()
     
     let titleLabel: UILabel = {
         let label = UILabel()
-        label.text = "BlackPink - Ice Cream (Ft. Selena Gomez)"
         label.backgroundColor = UIColor.clear
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
