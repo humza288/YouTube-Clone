@@ -145,8 +145,10 @@ class HomeController: UICollectionViewController, UICollectionViewDelegateFlowLa
         print("Searching...")
     }
     
+    let settingsLauncher = SettingsLauncher()
+    
     @objc func handleMore() {
-        print("More menu...")
+        settingsLauncher.showSettings()
     }
     
     let menuBar: MenuBar = {
